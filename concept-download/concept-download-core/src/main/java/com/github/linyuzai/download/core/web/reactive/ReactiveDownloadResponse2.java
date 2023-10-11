@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -16,7 +15,6 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
 
@@ -24,7 +22,7 @@ import java.util.function.Consumer;
  * 持有 {@link ServerHttpResponse} 的 {@link DownloadResponse}，用于 webflux。
  */
 @Getter
-public class ReactiveDownloadResponse implements DownloadResponse {
+public class ReactiveDownloadResponse2 implements DownloadResponse {
 
     private final ServerHttpResponse response;
 
@@ -32,13 +30,16 @@ public class ReactiveDownloadResponse implements DownloadResponse {
 
     private Mono<Void> mono;
 
-    public ReactiveDownloadResponse(ServerHttpResponse response) {
+    public ReactiveDownloadResponse2(ServerHttpResponse response) {
         this.response = response;
     }
 
     @Override
     public ReactiveObject<Void> write(Consumer<OutputStream> consumer) {
         //DataBufferUtils.write()
+        DataBuffer buffer = response.bufferFactory().allocateBuffer();
+        consumer.accept(buffer.asOutputStream());
+
         if (os == null) {
             mono = response.writeWith(Flux.create(fluxSink -> {
                 try {
@@ -56,7 +57,7 @@ public class ReactiveDownloadResponse implements DownloadResponse {
 
     @Override
     public OutputStream getOutputStream() {
-        return os;
+        return response.bufferFactory().allocateBuffer().asOutputStream();
     }
 
     @Override

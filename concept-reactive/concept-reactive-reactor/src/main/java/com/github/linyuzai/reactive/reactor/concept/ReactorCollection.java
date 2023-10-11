@@ -5,9 +5,7 @@ import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import com.github.linyuzai.reactive.core.concept.ReactivePublisher;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.function.Function;
@@ -39,6 +37,11 @@ public class ReactorCollection<T> implements ReactiveCollection<T> {
     }
 
     public static class FluxFactory implements Factory {
+
+        @Override
+        public <T> ReactiveCollection<T> wrap(Object o) {
+            return null;
+        }
 
         @Override
         public <T> ReactiveCollection<T> empty() {

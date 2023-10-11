@@ -5,6 +5,8 @@ import com.github.linyuzai.download.core.load.ConcurrentSourceLoader
 import com.github.linyuzai.download.core.load.SourceLoader
 import com.github.linyuzai.download.core.source.Source
 import com.github.linyuzai.download.core.source.multiple.MultipleSource
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept
+import com.github.linyuzai.reactive.core.concept.ReactiveObject
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -16,7 +18,7 @@ import reactor.core.publisher.Mono
  */
 open class CoroutinesSourceLoader : ConcurrentSourceLoader() {
 
-    override fun concurrentLoad(sources: Collection<Source>, context: DownloadContext): Mono<Source> {
+    override fun concurrentLoad(sources: Collection<Source>, context: DownloadContext): ReactiveObject<Source> {
         val results = mutableListOf<Source>()
         runBlocking {
             val deferredList = mutableListOf<Deferred<Source>>()
@@ -31,6 +33,7 @@ open class CoroutinesSourceLoader : ConcurrentSourceLoader() {
                 results.add(it.await())
             }
         }
-        return Mono.just(MultipleSource(results))
+        val reactive = context.get<ReactiveConcept>(ReactiveConcept::class.java)
+        return reactive.objectFactory().just(MultipleSource(results))
     }
 }

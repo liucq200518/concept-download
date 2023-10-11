@@ -11,6 +11,8 @@ public interface ReactiveCollection<T> extends ReactivePublisher<T> {
 
     interface Factory {
 
+        <T> ReactiveCollection<T> wrap(Object o);
+
         <T> ReactiveCollection<T> empty();
 
         <T> ReactiveCollection<T> fromIterable(Iterable<? extends T> it);

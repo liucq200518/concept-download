@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 
 public interface ReactiveObject<T> extends ReactivePublisher<T> {
 
+    T block();
+
     <R> ReactiveObject<R> map(Function<? super T, ? extends R> mapper);
 
     <R> ReactiveObject<R> flatMap(Function<? super T, ? extends ReactivePublisher<? extends R>> transformer);
@@ -20,6 +22,8 @@ public interface ReactiveObject<T> extends ReactivePublisher<T> {
     ReactiveObject<T> doAfterTerminate(Runnable runnable);
 
     interface Factory {
+
+        <T> ReactiveObject<T> wrap(Object o);
 
         <T> ReactiveObject<T> empty();
 

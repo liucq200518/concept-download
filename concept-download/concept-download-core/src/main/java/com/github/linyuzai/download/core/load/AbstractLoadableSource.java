@@ -7,10 +7,11 @@ import com.github.linyuzai.download.core.exception.DownloadException;
 import com.github.linyuzai.download.core.source.AbstractSource;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.web.ContentType;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 
 import java.io.*;
 
@@ -58,12 +59,13 @@ public abstract class AbstractLoadableSource extends AbstractSource {
      */
     @SneakyThrows
     @Override
-    public Mono<Source> load(DownloadContext context) {
+    public ReactiveObject<Source> load(DownloadContext context) {
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         if (inputStream != null) {
             //直接使用
             publisher.publish(new SourceAlreadyLoadedEvent(context, this));
-            return Mono.just(this);
+            return reactive.objectFactory().just(this);
         }
         if (isCacheEnabled()) {
             String cachePath = getCachePath();
@@ -81,19 +83,19 @@ public abstract class AbstractLoadableSource extends AbstractSource {
             }
 
             File cache = new File(dir, nameToUse);
-            Mono<Source> mono;
+            ReactiveObject<Source> ro;
             //缓存存在
             if (cache.exists()) {
                 publisher.publish(new SourceLoadedCacheUsedEvent(context, this, cache.getAbsolutePath()));
-                mono = Mono.just(this);
+                ro = reactive.objectFactory().just(this);
             } else {
                 //写到缓存文件
                 FileOutputStream fos = new FileOutputStream(cache);
-                mono = doLoad(fos, context)
+                ro = doLoad(fos, context)
                         .doOnSuccess(s -> closeStream(fos))
                         .doOnError(e -> closeStream(fos));
             }
-            return mono.map(it -> {
+            return ro.map(it -> {
                 //Content Type
                 String contentType = getContentType();
                 if (!StringUtils.hasText(contentType)) {
@@ -182,7 +184,7 @@ public abstract class AbstractLoadableSource extends AbstractSource {
      * @param context {@link DownloadContext}
      * @return 加载后的 {@link Source}
      */
-    public abstract Mono<Source> doLoad(OutputStream os, DownloadContext context);
+    public abstract ReactiveObject<Source> doLoad(OutputStream os, DownloadContext context);
 
     public static abstract class Builder<T extends AbstractLoadableSource, B extends Builder<T, B>> extends AbstractSource.Builder<T, B> {
 

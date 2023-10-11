@@ -2,6 +2,7 @@ package com.github.linyuzai.download.core.load;
 
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.source.Source;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import reactor.core.publisher.Mono;
 
 /**
@@ -19,5 +20,5 @@ public interface SourceLoader {
      * @param context {@link DownloadContext}
      * @return 加载后的 {@link Source}
      */
-    Mono<Source> load(Source source, DownloadContext context);
+    ReactiveObject<Source> load(Source source, DownloadContext context);
 }

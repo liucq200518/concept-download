@@ -7,8 +7,8 @@ import com.github.linyuzai.download.core.handler.DownloadHandlerChain;
 import com.github.linyuzai.download.core.load.AfterSourceLoadedEvent;
 import com.github.linyuzai.download.core.load.SourceLoader;
 import com.github.linyuzai.download.core.source.Source;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
-import reactor.core.publisher.Mono;
 
 /**
  * 对所有的 {@link Source} 进行加载。
@@ -30,7 +30,7 @@ public class LoadSourceHandler implements DownloadHandler {
      * @param context {@link DownloadContext}
      */
     @Override
-    public Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
+    public ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
         Source source = context.get(Source.class);
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         return sourceLoader.load(source, context)

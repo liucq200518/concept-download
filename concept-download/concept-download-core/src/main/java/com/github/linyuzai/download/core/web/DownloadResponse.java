@@ -1,7 +1,7 @@
 package com.github.linyuzai.download.core.web;
 
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.SneakyThrows;
-import reactor.core.publisher.Mono;
 
 import java.io.OutputStream;
 import java.net.URLEncoder;
@@ -17,11 +17,10 @@ public interface DownloadResponse {
      * 写入。
      *
      * @param consumer 回调 {@link OutputStream}
-     * @return {@link Void} 的 {@link Mono}
      */
-    default Mono<Void> write(Consumer<OutputStream> consumer) {
+    default ReactiveObject<Void> write(Consumer<OutputStream> consumer) {
         consumer.accept(getOutputStream());
-        return Mono.empty();
+        return null;
     }
 
     /**

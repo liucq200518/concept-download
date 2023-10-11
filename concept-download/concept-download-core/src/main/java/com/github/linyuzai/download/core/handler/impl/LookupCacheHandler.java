@@ -3,7 +3,7 @@ package com.github.linyuzai.download.core.handler.impl;
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.handler.DownloadHandler;
 import com.github.linyuzai.download.core.handler.DownloadHandlerChain;
-import reactor.core.publisher.Mono;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 
 /**
  * 对于某些请求是否可以直接获得缓存而不重复走前面的逻辑。
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public class LookupCacheHandler implements DownloadHandler {
 
     @Override
-    public Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
+    public ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
         return chain.next(context);
     }
 

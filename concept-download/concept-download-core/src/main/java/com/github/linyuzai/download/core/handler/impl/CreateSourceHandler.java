@@ -7,6 +7,7 @@ import com.github.linyuzai.download.core.event.DownloadEventPublisher;
 import com.github.linyuzai.download.core.handler.DownloadHandler;
 import com.github.linyuzai.download.core.handler.DownloadHandlerChain;
 import com.github.linyuzai.download.core.source.*;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -31,7 +32,7 @@ public class CreateSourceHandler implements DownloadHandler, DownloadContextInit
      * @param context {@link DownloadContext}
      */
     @Override
-    public Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
+    public ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
         Object original = context.getOptions().getSource();
         SourceFactory factory = sourceFactoryAdapter.getFactory(original, context);
         Source source = factory.create(original, context);

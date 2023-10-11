@@ -20,6 +20,11 @@ public class ReactorObject<T> implements ReactiveObject<T> {
     private final Mono<T> mono;
 
     @Override
+    public T block() {
+        return mono.block();
+    }
+
+    @Override
     public <R> ReactiveObject<R> map(Function<? super T, ? extends R> mapper) {
         return new ReactorObject<>(mono.map(mapper));
     }
@@ -55,6 +60,11 @@ public class ReactorObject<T> implements ReactiveObject<T> {
     }
 
     public static class MonoFactory implements Factory {
+
+        @Override
+        public <T> ReactiveObject<T> wrap(Object o) {
+            return null;
+        }
 
         @Override
         public <T> ReactiveObject<T> empty() {

@@ -3,12 +3,12 @@ package com.github.linyuzai.download.core.load;
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.source.multiple.MultipleSource;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +36,7 @@ public abstract class ConcurrentSourceLoader implements SourceLoader {
      * @return 加载后的 {@link Source}
      */
     @Override
-    public Mono<Source> load(Source source, DownloadContext context) {
+    public ReactiveObject<Source> load(Source source, DownloadContext context) {
         Collection<Source> syncSources = new ArrayList<>();
         Collection<Source> asyncSources = new ArrayList<>();
         Collection<Source> sources = source.list();
@@ -48,28 +48,32 @@ public abstract class ConcurrentSourceLoader implements SourceLoader {
             }
         }
 
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
         if (asyncSources.isEmpty()) {
-            return Flux.fromIterable(syncSources)
+            return reactive.collectionFactory()
+                    .fromIterable(syncSources)
                     .flatMap(it -> it.load(context))
                     .collectList()
                     .map(MultipleSource::new);
         } else {
             if (asyncSources.size() == 1 && serialOnSingle) {
                 syncSources.add(asyncSources.iterator().next());
-                return Flux.fromIterable(syncSources)
+                return reactive.collectionFactory()
+                        .fromIterable(syncSources)
                         .flatMap(it -> it.load(context))
                         .collectList()
                         .map(MultipleSource::new);
             } else {
-                Mono<Source> syncMono =  Flux.fromIterable(syncSources)
+                ReactiveObject<Source> syncObject = reactive.collectionFactory()
+                        .fromIterable(syncSources)
                         .flatMap(it -> it.load(context))
                         .collectList()
                         .map(MultipleSource::new);
-                Mono<Source> asyncMono = concurrentLoad(asyncSources, context);
-                return Mono.zip(syncMono, asyncMono).map(objects -> {
+                ReactiveObject<Source> asyncObject = concurrentLoad(asyncSources, context);
+                return reactive.objectFactory().zip(syncObject, asyncObject, (sync, async) -> {
                     Collection<Source> newSources = new ArrayList<>();
-                    newSources.addAll(objects.getT1().list());
-                    newSources.addAll(objects.getT2().list());
+                    newSources.addAll(sync.list());
+                    newSources.addAll(async.list());
                     return new MultipleSource(newSources);
                 });
             }
@@ -84,5 +88,5 @@ public abstract class ConcurrentSourceLoader implements SourceLoader {
      * @param context {@link DownloadContext}
      * @return 加载后的 {@link Source}
      */
-    public abstract Mono<Source> concurrentLoad(Collection<Source> sources, DownloadContext context);
+    public abstract ReactiveObject<Source> concurrentLoad(Collection<Source> sources, DownloadContext context);
 }

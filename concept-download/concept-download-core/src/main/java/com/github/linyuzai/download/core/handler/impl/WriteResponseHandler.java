@@ -11,10 +11,10 @@ import com.github.linyuzai.download.core.web.*;
 import com.github.linyuzai.download.core.write.DownloadWriter;
 import com.github.linyuzai.download.core.write.DownloadWriterAdapter;
 import com.github.linyuzai.download.core.write.Progress;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,39 +54,39 @@ public class WriteResponseHandler implements DownloadHandler, DownloadContextIni
      * @param context {@link DownloadContext}
      */
     @Override
-    public Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
+    public ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
         Compression compression = context.get(Compression.class);
+        DownloadRequest request = context.get(DownloadRequest.class);
+        DownloadResponse response = context.get(DownloadResponse.class);
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
-        //获得Request
-        return downloadRequestProvider.getRequest(context).flatMap(request -> {
-                    //获得Range
-                    Range range = request.getRange();
-                    DownloadWriter writer = downloadWriterAdapter.getWriter(compression, range, context);
-                    //获得Response
-                    return downloadResponseProvider.getResponse(context)
-                            //设置响应头
-                            .filter(response -> applyHeaders(response, compression, range, context))
-                            //写数据
-                            .flatMap(response -> response.write(new Consumer<OutputStream>() {
 
-                                @SneakyThrows
-                                @Override
-                                public void accept(OutputStream os) {
-                                    Collection<Part> parts = compression.getParts();
-                                    Progress progress = new Progress(compression.getLength());
-                                    for (Part part : parts) {
-                                        InputStream is = part.getInputStream();
-                                        writer.write(is, os, range, part.getCharset(), part.getLength(), (current, increase) -> {
-                                            //更新并发布写入进度
-                                            progress.update(increase);
-                                            publisher.publish(new ResponseWritingProgressEvent(context, progress.freeze()));
-                                        });
-                                    }
-                                    os.flush();
-                                }
-                            }));
-                })
-                .doOnSuccess(it -> publisher.publish(new AfterResponseWrittenEvent(context)));
+        //获得Range
+        Range range = request.getRange();
+        DownloadWriter writer = downloadWriterAdapter.getWriter(compression, range, context);
+        //设置响应头
+        if (!applyHeaders(response, compression, range, context)) {
+            return chain.next(context);
+        }
+
+        //写数据
+        return response.write(new Consumer<OutputStream>() {
+
+            @SneakyThrows
+            @Override
+            public void accept(OutputStream os) {
+                Collection<Part> parts = compression.getParts();
+                Progress progress = new Progress(compression.getLength());
+                for (Part part : parts) {
+                    InputStream is = part.getInputStream();
+                    writer.write(is, os, range, part.getCharset(), part.getLength(), (current, increase) -> {
+                        //更新并发布写入进度
+                        progress.update(increase);
+                        publisher.publish(new ResponseWritingProgressEvent(context, progress.freeze()));
+                    });
+                }
+                os.flush();
+            }
+        }).doOnSuccess(it -> publisher.publish(new AfterResponseWrittenEvent(context)));
     }
 
     /**

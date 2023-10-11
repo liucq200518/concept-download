@@ -20,6 +20,11 @@ public class RxJava3Object<T> implements ReactiveObject<T> {
     private final Maybe<T> maybe;
 
     @Override
+    public T block() {
+        return maybe.blockingGet();
+    }
+
+    @Override
     public <R> ReactiveObject<R> map(Function<? super T, ? extends R> mapper) {
         return new RxJava3Object<>(maybe.map(mapper::apply));
     }
@@ -55,6 +60,11 @@ public class RxJava3Object<T> implements ReactiveObject<T> {
     }
 
     public static class MaybeFactory implements Factory {
+
+        @Override
+        public <T> ReactiveObject<T> wrap(Object o) {
+            return null;
+        }
 
         @Override
         public <T> ReactiveObject<T> empty() {

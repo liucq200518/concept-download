@@ -10,6 +10,7 @@ ext {
 dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter'
     compileOnly project(':concept-download:concept-download-core')
+    compileOnly project(':concept-reactive:concept-reactive-core')
     api 'com.squareup.okhttp3:okhttp:4.9.3'
 }
 

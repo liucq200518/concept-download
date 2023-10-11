@@ -6,10 +6,10 @@ import com.github.linyuzai.download.core.concept.Resource;
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.source.file.EmptyInputStream;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.*;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -163,8 +163,10 @@ public class MultipleSource implements Source {
      * @param context {@link DownloadContext}
      */
     @Override
-    public Mono<Source> load(DownloadContext context) {
-        return Flux.fromIterable(sources)
+    public ReactiveObject<Source> load(DownloadContext context) {
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
+        return reactive.collectionFactory()
+                .fromIterable(sources)
                 .flatMap(it -> it.load(context))
                 .collectList()
                 .map(MultipleSource::new);

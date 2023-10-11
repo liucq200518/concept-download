@@ -7,6 +7,8 @@ import com.github.linyuzai.download.core.load.RemoteLoadableSource;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.write.DownloadWriter;
 import com.github.linyuzai.download.core.write.DownloadWriterAdapter;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.*;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
@@ -75,7 +77,7 @@ public class HttpSource extends RemoteLoadableSource {
      */
     @SneakyThrows
     @Override
-    public Mono<InputStream> loadRemote(DownloadContext context) {
+    public ReactiveObject<InputStream> loadRemote(DownloadContext context) {
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         publisher.publish(new LoadHttpSourceEvent(context, this));
         URL u = new URL(url);
@@ -88,6 +90,7 @@ public class HttpSource extends RemoteLoadableSource {
                 connection.setRequestProperty(entry.getKey(), entry.getValue());
             }
         }
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
         connection.connect();
         int code = connection.getResponseCode();
         if (isResponseSuccess(code)) {
@@ -102,7 +105,7 @@ public class HttpSource extends RemoteLoadableSource {
             if (l != -1) {
                 length = l;
             }
-            return Mono.just(connection.getInputStream());
+            return reactive.objectFactory().just(connection.getInputStream());
         } else {
             DownloadWriterAdapter writerAdapter = context.get(DownloadWriterAdapter.class);
             DownloadWriter writer = writerAdapter.getWriter(this, null, context);

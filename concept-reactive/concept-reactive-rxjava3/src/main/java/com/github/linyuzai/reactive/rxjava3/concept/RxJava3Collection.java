@@ -41,6 +41,11 @@ public class RxJava3Collection<T> implements ReactiveCollection<T> {
     public static class FlowableFactory implements Factory {
 
         @Override
+        public <T> ReactiveCollection<T> wrap(Object o) {
+            return null;
+        }
+
+        @Override
         public <T> ReactiveCollection<T> empty() {
             return new RxJava3Collection<>(Flowable.empty());
         }

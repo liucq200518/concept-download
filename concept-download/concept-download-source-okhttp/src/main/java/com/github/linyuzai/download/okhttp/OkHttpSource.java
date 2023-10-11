@@ -5,10 +5,11 @@ import com.github.linyuzai.download.core.event.DownloadEventPublisher;
 import com.github.linyuzai.download.core.exception.DownloadException;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.source.http.HttpSource;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.*;
 import okhttp3.*;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
 
@@ -26,7 +27,8 @@ public class OkHttpSource extends HttpSource {
 
     @SneakyThrows
     @Override
-    public Mono<InputStream> loadRemote(DownloadContext context) {
+    public ReactiveObject<InputStream> loadRemote(DownloadContext context) {
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         publisher.publish(new LoadOkHttpSourceEvent(context, this));
         Request.Builder rb = new Request.Builder();
@@ -53,7 +55,7 @@ public class OkHttpSource extends HttpSource {
             if (l != -1) {
                 length = l;
             }
-            return Mono.just(body.byteStream());
+            return reactive.objectFactory().just(body.byteStream());
         } else {
             StringBuilder builder = new StringBuilder();
             builder.append(response.code()).append(";");

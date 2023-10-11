@@ -8,7 +8,6 @@ import com.github.linyuzai.download.core.handler.DownloadHandlerChainImpl;
 import com.github.linyuzai.download.core.options.DownloadOptions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -49,11 +48,11 @@ public class ChainDownloadConcept implements DownloadConcept {
         //初始化上下文
         context.initialize();
         //处理链
-        Mono<Void> mono = new DownloadHandlerChainImpl(0, handlers)
+        return new DownloadHandlerChainImpl(0, handlers)
                 .next(context)
                 //最后销毁上下文
                 .doAfterTerminate(context::destroy);
         //拦截返回值
-        return returnInterceptor.intercept(mono);
+        //return returnInterceptor.intercept(mono);
     }
 }

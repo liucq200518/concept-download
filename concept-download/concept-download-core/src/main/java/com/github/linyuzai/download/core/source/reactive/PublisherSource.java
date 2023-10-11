@@ -3,6 +3,8 @@ package com.github.linyuzai.download.core.source.reactive;
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.source.SourceFactoryAdapter;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.reactivestreams.Publisher;
@@ -68,11 +70,14 @@ public class PublisherSource implements Source {
      * @return 加载后的 {@link Source}
      */
     @Override
-    public Mono<Source> load(DownloadContext context) {
+    public ReactiveObject<Source> load(DownloadContext context) {
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
         SourceFactoryAdapter adapter = context.get(SourceFactoryAdapter.class);
-        return Flux.from(publisher)
+        return reactive.collectionFactory()
+                .wrap(publisher)
                 .collectList()
-                .map(it -> adapter.getFactory(it, context).create(it, context))
+                .map(it -> adapter.getFactory(it, context)
+                        .create(it, context))
                 .flatMap(it -> it.load(context));
     }
 }

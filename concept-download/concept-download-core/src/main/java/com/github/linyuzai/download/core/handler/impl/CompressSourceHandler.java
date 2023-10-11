@@ -1,6 +1,6 @@
 package com.github.linyuzai.download.core.handler.impl;
 
-import com.github.linyuzai.download.core.aop.annotation.Download;
+import com.github.linyuzai.download.core.annotation.Download;
 import com.github.linyuzai.download.core.compress.*;
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.context.DownloadContextDestroyer;
@@ -11,9 +11,9 @@ import com.github.linyuzai.download.core.handler.DownloadHandlerChain;
 import com.github.linyuzai.download.core.source.Source;
 import com.github.linyuzai.download.core.write.DownloadWriter;
 import com.github.linyuzai.download.core.write.DownloadWriterAdapter;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AllArgsConstructor;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 
 /**
  * 对 {@link Source} 进行压缩。
@@ -38,7 +38,7 @@ public class CompressSourceHandler implements DownloadHandler, DownloadContextIn
      * @param context {@link DownloadContext}
      */
     @Override
-    public Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
+    public ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain) {
         Source source = context.get(Source.class);
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         Compression compression;

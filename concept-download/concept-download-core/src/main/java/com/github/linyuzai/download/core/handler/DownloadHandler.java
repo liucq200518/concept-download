@@ -2,7 +2,7 @@ package com.github.linyuzai.download.core.handler;
 
 import com.github.linyuzai.download.core.context.DownloadContext;
 import com.github.linyuzai.download.core.order.OrderProvider;
-import reactor.core.publisher.Mono;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 
 /**
  * 下载处理器。
@@ -21,5 +21,5 @@ public interface DownloadHandler extends OrderProvider {
      * @param context {@link DownloadContext}
      * @param chain   {@link DownloadHandlerChain}
      */
-    Mono<Void> handle(DownloadContext context, DownloadHandlerChain chain);
+    ReactiveObject<Void> handle(DownloadContext context, DownloadHandlerChain chain);
 }

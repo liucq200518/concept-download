@@ -1,6 +1,7 @@
 package com.github.linyuzai.download.core.handler;
 
 import com.github.linyuzai.download.core.context.DownloadContext;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import reactor.core.publisher.Mono;
 
 /**
@@ -13,5 +14,5 @@ public interface DownloadHandlerChain {
      *
      * @param context {@link DownloadContext}
      */
-    Mono<Void> next(DownloadContext context);
+    ReactiveObject<Void> next(DownloadContext context);
 }

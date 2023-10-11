@@ -9,6 +9,8 @@ import com.github.linyuzai.download.core.source.http.HttpSource;
 import com.github.linyuzai.download.core.write.DownloadWriter;
 import com.github.linyuzai.download.core.write.DownloadWriterAdapter;
 import com.github.linyuzai.download.core.write.Progress;
+import com.github.linyuzai.reactive.core.concept.ReactiveConcept;
+import com.github.linyuzai.reactive.core.concept.ReactiveObject;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,10 +34,10 @@ import java.util.Map;
 public class WebClientSource extends HttpSource {
 
     @Override
-    public Mono<Source> doLoad(OutputStream os, DownloadContext context) {
+    public ReactiveObject<Source> doLoad(OutputStream os, DownloadContext context) {
         DownloadEventPublisher publisher = context.get(DownloadEventPublisher.class);
         publisher.publish(new LoadWebClientSourceEvent(context, this));
-        return WebClient.create()
+        Mono<Source> mono = WebClient.create()
                 .get()
                 .uri(url)
                 .headers(httpHeaders -> {
@@ -55,6 +57,8 @@ public class WebClientSource extends HttpSource {
                                 .flatMap(it -> Mono.error(new DownloadException("code: " + code + ", " + it)));
                     }
                 });
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
+        return reactive.objectFactory().wrap(mono);
     }
 
     /**
@@ -64,8 +68,9 @@ public class WebClientSource extends HttpSource {
      * @return {@link Mono#empty()}
      */
     @Override
-    public Mono<InputStream> loadRemote(DownloadContext context) {
-        return Mono.empty();
+    public ReactiveObject<InputStream> loadRemote(DownloadContext context) {
+        ReactiveConcept reactive = context.get(ReactiveConcept.class);
+        return reactive.objectFactory().empty();
     }
 
     @Override
